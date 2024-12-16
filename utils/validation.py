@@ -1,5 +1,6 @@
 import re
 
+
 def validate_base64_image(input: str) -> bool:
     try:
         prefix = input.split(',')[0]
