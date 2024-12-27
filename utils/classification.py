@@ -1,28 +1,25 @@
 from typing import *
 import numpy as np
-import keras
+import cv2
+from utils.horizon_detection import trim_horizon
+
+from flask import current_app
 
 
-MODEL_PATH = 'keras/classifier.keras'
-CLASS_TO_LABEL = {
-    0: 'Ac',
-    1: 'As',
-    2: 'Cb',
-    3: 'Cc',
-    4: 'Ci',
-    5: 'Cs',
-    6: 'Ct',
-    7: 'Cu',
-    8: 'Ns',
-    9: 'Sc',
-    10: 'St'
-}
+def preprocess(input_img: np.ndarray, trim_horizon_flag: bool=False):
+    out_img = input_img
+    if trim_horizon_flag:
+        out_img = trim_horizon(out_img)
 
-def predict_cloud_type(input_img: np.ndarray) -> Dict[str, float]:
-    cls = keras.saving.load_model(MODEL_PATH)
-    pred = cls.predict(np.array([input_img]))
+    out_img = cv2.resize(out_img, (224, 224))
+    return out_img
+
+def predict_cloud_type(input_img: np.ndarray, trim_horizon_flag: bool=False) -> Dict[str, float]:
+    cls = current_app.config['cls']
+    img = preprocess(input_img, trim_horizon_flag)
+    pred = cls.predict(img)
     result = {}
-    for label, val in zip(CLASS_TO_LABEL.values(), pred[0]):
-        result.update({label: str(val)})
+    for i, val in enumerate(pred):
+        result.update({cls.get_label(i): str(val)})
 
     return result
