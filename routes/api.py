@@ -48,8 +48,3 @@ def reload_model():
         return jsonify(success=True), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@api.route('/clear', methods = ['POST'])
-def clear_model():
-    current_app.config['cls'].clear_model()
-    return jsonify(), 204
